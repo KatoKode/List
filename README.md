@@ -21,14 +21,6 @@ void * list_alloc();
 ---
 
 ```c
-void list_free(list_t *list);
-```
-
-`list_free()` deallocates a list structure from the Heap.
-
----
-
-```c
 int list_add (list_t *list, void const *object);
 ```
 
@@ -48,7 +40,7 @@ void * list_at (list_t *list, size_t const index);
 void * list_begin (list_t *list);
 ```
 
-`list_begin()` returns the address of the first member in a list or `NULL` if list is empty.
+`list_begin()` initializes the list iterator and returns the address of the first member in a list or `NULL` if list is empty.
 
 ---
 
@@ -88,7 +80,7 @@ int list_delete (list_t *list, void const *key,
 void * list_end (list_t *);
 ```
 
-`list_end()` returns the address of the last member in a list or `NULL` if a list is empty.
+`list_end()` initializes the list iterator and returns the address of the last member in a list or `NULL` if a list is empty.
 
 ---
 
@@ -100,6 +92,14 @@ void * list_find (list_t const *list, void const *key,
 `list_find()` returns the first member in a list with a matching key, or `NULL` if no match is found.
 
 `find_cb()` is a user supplied function.  This function must return an integer less-than, equal-to, or greater-than zero if parameter `key` is less-than, equal-to, or greater-than the key of parameter `mbr`.
+
+---
+
+```c
+void list_free(list_t *list);
+```
+
+`list_free()` deallocates a list structure from the Heap.
 
 ---
 
