@@ -48,7 +48,7 @@ void * list_at (list_t *list, size_t const index);
 void * list_begin (list_t *list);
 ```
 
-`list_begin()` returns the address of the first member in a list, or `NULL` if list is empty.  **NOTE:** Always call `list_begin()` prior to calling `list_next()`.
+`list_begin()` returns the address of the first member in a list, or `NULL` if list is empty.
 
 ---
 
