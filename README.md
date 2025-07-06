@@ -40,7 +40,7 @@ int list_add (list_t *list, void const *object);
 void * list_at (list_t *list, size_t const index);
 ```
 
-`list_at()` returns the address to a list member at `index` in a list, or `NULL` on failure (for instance, index out-of-bounds).
+`list_at()` returns the address of a list member at `index` in a list, or `NULL` on failure (for instance, index out-of-bounds).
 
 ---
 
