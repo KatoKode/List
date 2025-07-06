@@ -1,6 +1,6 @@
 Just Another Armchair Programmer
 
-JSON Library Written in C with Assembly Language Support Libraries
+List Library Written in Assembly Language with C Interface
 
 by Jerry McIntosh
 
