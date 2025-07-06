@@ -48,7 +48,7 @@ void * list_at (list_t *list, size_t const index);
 void * list_begin (list_t *list);
 ```
 
-`list_begin()` returns the address of the first member in a list, or `NULL` if list is empty.
+`list_begin()` returns the address of the first member in a list or `NULL` if list is empty.
 
 ---
 
@@ -88,7 +88,7 @@ int list_delete (list_t *list, void const *key,
 void * list_end (list_t *);
 ```
 
-`list_end()` returns the address of the last member in a list, or `NULL` if list is empty.  **NOTE:** Always call `list_end()` prior to calling `list_prev()`.
+`list_end()` returns the address of the last member in a list or `NULL` if a list is empty.
 
 ---
 
