@@ -165,7 +165,7 @@ size_t list_slot_size (list_t *list);
 void list_sort (list_t *list, int (*sort_cb) (void const *mbr1, void const *mbr2));
 ```
 
-`sort_cb()` is a user supplied function.  Both parameters point to list members being compared.  This function must return an integer less-than, equal-to, or greater-than zero if the first parameter `mbr1` is less-than, equal-to, or greater-than the second parameter `mbr2`.  If two members compare as equal, their order in the sorted array is undefined.
+`sort_cb()` is a user supplied function.  Both parameters point to list members being compared.  This function must return an integer less-than, equal-to, or greater-than zero if the key of parameter `mbr1` is less-than, equal-to, or greater-than the key of parameter `mbr2`.  If two members compare as equal, their order in the sorted array is undefined.
 
 `list_sort()` sorts a list in ascending order according to a comparison function pointed to by `sort_cb`.
 
