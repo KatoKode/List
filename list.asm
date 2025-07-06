@@ -260,6 +260,7 @@ list_delete:
       push      rbp
       mov       rbp, rsp
       sub       rsp, 24
+      push      r12
 ; QWORD [rbp - 8] = rdi (list)
       mov       QWORD [rbp - 8], rdi
 ; QWORD [rbp - 16] = rcx (delete_cb)
@@ -277,7 +278,7 @@ list_delete:
       test      rcx, rcx
       jz        .no_delete_cb
       mov       rdi, rax
-      call      rcx
+      ALIGN_STACK_AND_CALL r12, rcx
 .no_delete_cb:
 ; if (target == (list->blkend - list->s_size)) goto .skip_move;
       mov       rdi, QWORD [rbp - 8]
@@ -309,6 +310,7 @@ list_delete:
 ; return 0;
       xor       eax, eax
 .epilogue:
+      pop       r12
       mov       rsp, rbp
       pop       rbp
       ret
