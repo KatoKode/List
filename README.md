@@ -117,7 +117,7 @@ int list_init (list_t *list, size_t const size);
 void * list_next (list_t *list);
 ```
 
-`list_next()` increments the list iterator and returns the address of the next object in a list, or `NULL` when no successor exists.  `list_begin()` must be called prior to calling this function.
+`list_next()` increments the list iterator and returns the address of the next object in a list, or `NULL` when no successor exists.  **NOTE:** `list_begin()` must be called prior to calling this function.
 
 ---
 
@@ -133,7 +133,7 @@ size_t list_object_size (list_t *list);
 void * list_pred (list_t *list);
 ```
 
-`list_pred()` returns the address of the predecessor to the current member in a list, or `NULL` when no predecessor exists.  `list_end()` must be called prior to calling this function.
+`list_pred()` returns the address of the predecessor to the current member in a list, or `NULL` when no predecessor exists.  **NOTE:**  `list_end()` must be called prior to calling this function.
 
 ---
 
@@ -141,7 +141,7 @@ void * list_pred (list_t *list);
 void * list_prev (list_t *list);
 ```
 
-`list_prev()` decrements the list iterator and returns the address of the previous object in a list, or `NULL` when no predecessor exists.  `list_end()` must be called prior to calling this function.
+`list_prev()` decrements the list iterator and returns the address of the previous object in a list, or `NULL` when no predecessor exists.  **NOTE:** `list_end()` must be called prior to calling this function.
 
 ---
 
@@ -175,7 +175,7 @@ void list_sort (list_t *list, int (*sort_cb) (void const *mbr1, void const *mbr2
 void * list_succ (list_t *list);
 ```
 
-`list_succ()` returns the address of the successor to the current member in a list, or `NULL` when no successor exists.  `list_begin()` must be called prior to calling this function.
+`list_succ()` returns the address of the successor to the current member in a list, or `NULL` when no successor exists.  **NOTE:** `list_begin()` must be called prior to calling this function.
 
 ---
 
