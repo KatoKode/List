@@ -24,7 +24,7 @@ void * list_alloc();
 int list_add (list_t *list, void const *object);
 ```
 
-`list_add()` adds whatever `object` points to to the list.  Returns 0 on success, or -1 on failure.  **NOTE:** A slot is allocated for the contents of `object` which is then copied into that slot.  Adding to a list amounts to copying the contents of an object into the next available slot in a list.
+`list_add()` adds contents of `object` to the list.  Returns 0 on success, or -1 on failure.  **NOTE:** A slot is allocated in the list and the contents of `object` are copied into that slot.  Adding to a list amounts to copying the contents of an object into the next available slot in a list.
 
 ---
 
