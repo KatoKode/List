@@ -6,6 +6,43 @@ by Jerry McIntosh
 
 ---
 
+## LIST OF REQUIREMENTS
+
++ Linux OS
++ Programming languages: C and Assembly
++ Netwide Assembler (NASM), the GCC compiler, and the make utility
++ your favorite text editor
++ and working at the command line
+
+---
+
+# CREATE THE DEMO
+Run the following command in the `List-main` folder:
+```bash
+sh ./list_make.sh
+```
+
+---
+
+# RUN THE DEMO
+In folder `list_test` enter the following command:
+```bash
+./go_list_test.sh
+```
+
+---
+
+# THINGS TO KNOW
+You can modify the following psuedo instruction in file `list.asm` in folder `List-main/util`.  The value 16 represents the number of objects the list can hold.  Upon adding the 17th object the list buffer will be enlarged by another `LIST_COUNT` objects.  Sixteen is a good base number to start with.  Increasing `LIST_COUNT` may reduce the number of times the list buffer is enlarged to accomodate more objects.
+
+```nasm
+LIST_COUNT      EQU     16
+```
+
+Have Fun!
+
+---
+
 ## List Library
 
 ---
