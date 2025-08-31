@@ -16,12 +16,7 @@
 #   with LIST; if not, write to the Free Software Foundation, Inc.,
 #   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #-------------------------------------------------------------------------------
-# makefile for demo
+# !/bin/sh
 #
-demo: main.o ../util/libutil.so
-	gcc -march=x86-64 -m64 -z noexecstack main.o ../util/libutil.so -o demo
-main.o: main.c
-	gcc -march=x86-64 -m64 -z noexecstack -Wall -c main.c -o main.o
-.PHONY: clean
-clean:
-	rm -f demo main.o
+./demo
+
