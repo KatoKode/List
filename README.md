@@ -25,9 +25,9 @@ sh ./list_make.sh
 ---
 
 # RUN THE DEMO
-In folder `list_test` enter the following command:
+In folder `demo` enter the following command:
 ```bash
-./go_list_test.sh
+./go_demo.sh
 ```
 
 ---
