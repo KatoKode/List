@@ -17,7 +17,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ------------------------------------------------------------------------------*/
 #ifndef UTIL_H
-#define UTIL_H
+#define UTIL_H  1
 
 #include <stddef.h>
 #include <stdlib.h>

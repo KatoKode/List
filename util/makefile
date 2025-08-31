@@ -22,9 +22,9 @@ libutil.so: memmove64.o list.o util.o
 util.o: util.c
 	gcc -march=x86-64 -m64 -z noexecstack -fPIC -c util.c -o util.o
 list.o: list.asm
-	nasm -f elf64 list.asm
+	nasm -f elf64 list.asm -o list.o
 memmove64.o: memmove64.asm
-	nasm -f elf64 memmove64.asm
+	nasm -f elf64 memmove64.asm -o memmove64.o
 .PHONY: clean
 clean:
 	rm -f libutil.so util.o
