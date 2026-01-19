@@ -1,51 +1,106 @@
-Just Another Armchair Programmer
+# List Library  
+**Dynamic array/list implementation in x86-64 Assembly with C interface**
 
-List Library Written in Assembly Language with C Interface
+by JD McIntosh
 
-by Jerry McIntosh
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform: Linux x86-64](https://img.shields.io/badge/platform-linux%20x86--64-blue)](https://www.kernel.org/)
 
----
+## Features
 
-## LIST OF REQUIREMENTS
+- Generic list of same size elements
+- Dynamic growth
+- Forward & backward iteration
+- Fast indexed access (`list_at`)
+- Binary search capable after sorting (`list_find`)
+- Two deletion modes:
+  - `list_delete` – finds & removes by key (requires sorted list)
+  - `list_remove` – removes by direct pointer
+- Custom comparison & cleanup callbacks
+- Very lightweight memory footprint
 
-+ Linux OS
-+ Programming languages: C and Assembly
-+ Netwide Assembler (NASM), the GCC compiler, and the make utility
-+ your favorite text editor
-+ and working at the command line
+## Requirements
 
----
+- Linux (x86-64)
+- NASM (Netwide Assembler)
+- GCC
+- Make
+- bash
 
-# CREATE THE DEMO
-Run the following command in the `List-main` folder:
+# Quick Start
+
+## Build everything (library + demo)
 ```bash
+cd List-main
 sh ./list_make.sh
 ```
 
----
-
-# RUN THE DEMO
-In folder `demo` enter the following command:
+## Run the demonstration program
 ```bash
+cd demo
 ./go_demo.sh
 ```
 
----
-
-# THINGS TO KNOW
-You can modify the following psuedo instruction in file `list.asm` in folder `List-main/util`.  The value 16 represents the number of objects the list can hold.  Upon adding the 17th object the list buffer will be enlarged by another `LIST_COUNT` objects.  Sixteen is a good base number to start with.  Increasing `LIST_COUNT` may reduce the number of times the list buffer is enlarged to accomodate more objects.
+## Configuration (list.asm)
+You can tune the growth strategy by changing this value:
 
 ```nasm
 LIST_COUNT      EQU     16
 ```
 
-Have Fun!
+## Basic Usage Example
+
+```C
+#include "list.h"
+
+typedef struct {
+    int id;
+    char name[32];
+} Person;
+
+int compare_by_id(const void* a, const void* b) {
+    return ((Person*)a)->id - ((Person*)b)->id;
+}
+
+int main(void)
+{
+    list_t* people = list_alloc();
+    if (!people) return 1;
+
+    if (list_init(people, sizeof(Person)) != 0) {
+        list_free(people);
+        return 1;
+    }
+
+    Person p1 = { .id = 42, .name = "Alice" };
+    Person p2 = { .id =  7, .name = "Bob"   };
+    Person p3 = { .id = 19, .name = "Carol" };
+
+    list_add(people, &p1);
+    list_add(people, &p2);
+    list_add(people, &p3);
+
+    // Sort for binary search & ordered delete
+    list_sort(people, compare_by_id);
+
+    // Find & delete by key
+    Person key = { .id = 7 };
+    list_delete(people, &key, compare_by_id, NULL);
+
+    // Iteration example
+    Person* p;
+    for (p = list_begin(people); p; p = list_next(people)) {
+        printf("ID: %d  Name: %s\n", p->id, p->name);
+    }
+
+    list_free(people);
+    return 0;
+}
+```
 
 ---
 
-## List Library
-
----
+## List Library API
 
 The List Library stores objects of the same size that can be: sorted and searched; deleted from the list; and iterated through, forward or backward.
 
