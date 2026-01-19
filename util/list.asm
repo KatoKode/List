@@ -32,7 +32,8 @@ ALIGN_SIZE_8    EQU     8
 ALIGN_MASK_8    EQU     ~(ALIGN_SIZE_8 - 1)
 ;
 ALIGN_SIZE_16   EQU     16
-ALIGN_MASK_16   EQU     ~(ALIGN_SIZE_16 - 1)
+ALIGN_WITH_16   EQU     (ALIGN_SIZE_16 - 1)
+ALIGN_MASK_16   EQU     ~(ALIGN_WITH_16)
 ;
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
@@ -80,7 +81,7 @@ list_add:
 ; prologue
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 16
+      sub       rsp, 24
 ; store rdi (list) and rsi (object) on stack
       mov       QWORD [rbp - 8], rdi
       mov       QWORD [rbp - 16], rsi
@@ -251,6 +252,7 @@ list_curr:
 ;   QWORD [rbp - 8]   = rdi (list)
 ;   QWORD [rbp - 16]  = rcx (delete_cb)
 ;   QWORD [rbp - 24]  = (void *target)
+;   QWORD [rbp - 32]  = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
 section .text
@@ -259,12 +261,10 @@ list_delete:
 ; prologue
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 24
-      push      r12
-; QWORD [rbp - 8] = rdi (list)
+      sub       rsp, 40
       mov       QWORD [rbp - 8], rdi
-; QWORD [rbp - 16] = rcx (delete_cb)
       mov       QWORD [rbp - 16], rcx
+      mov       QWORD [rbp - 32], rbx
 ; if ((target = list_find(list, key, find_cb)) == NULL) return -1;
       call      list_find
       mov       QWORD [rbp - 24], rax
@@ -278,7 +278,7 @@ list_delete:
       test      rcx, rcx
       jz        .no_delete_cb
       mov       rdi, rax
-      ALIGN_STACK_AND_CALL r12, rcx
+      ALIGN_STACK_AND_CALL rbx, rcx
 .no_delete_cb:
 ; if (target == (list->blkend - list->s_size)) goto .skip_move;
       mov       rdi, QWORD [rbp - 8]
@@ -310,7 +310,7 @@ list_delete:
 ; return 0;
       xor       eax, eax
 .epilogue:
-      pop       r12
+      mov       rbx, QWORD [rbp - 32]
       mov       rsp, rbp
       pop       rbp
       ret
@@ -359,11 +359,19 @@ list_end:
 ; return:
 ;
 ;   eax = iter (address of matching object) | NULL
+;
+; stack:
+;
+;   QWORD [rbp - 8] = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_find:function
 list_find:
-      push      r12
+; prologue
+      push      rbp
+      mov       rbp, rsp
+      sub       rsp, 8
+      mov       QWORD [rbp - 8], rbx
       push      rsi
       mov       r8, rdx
       mov       rcx, QWORD [rdi + list.s_size]
@@ -371,8 +379,11 @@ list_find:
       mov       rdx, rax
       mov       rsi, QWORD [rdi + list.buffer]
       pop       rdi
-      ALIGN_STACK_AND_CALL r12, bsearch, wrt, ..plt
-      pop       r12
+      ALIGN_STACK_AND_CALL rbx, bsearch, wrt, ..plt
+; epilogue
+      mov       rbx, QWORD [rbp - 8]
+      mov       rsp, rbp
+      pop       rbp
       ret
 ;
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -393,6 +404,7 @@ list_find:
 ;
 ;   QWORD [rbp - 8]   = rdi (list)
 ;   QWORD [rbp - 16]  = buffer_size
+;   QWORD [rbp - 24]  = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_init:function
@@ -400,10 +412,9 @@ list_init:
 ; prologue
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 16
-      push      r12
-; QWORD [rbp - 8] = rdi (list)
+      sub       rsp, 24
       mov       QWORD [rbp - 8], rdi
+      mov       QWORD [rbp - 24], rbx
 ; list->o_size = obj_size;
       mov       QWORD [rdi + list.o_size], rsi
 ; list->s_size = (obj_size + ALIGN_SIZE_8 - 1) & ALIGN_MASK_8;
@@ -423,7 +434,7 @@ list_init:
 ; if ((list->buffer = calloc(1, (rax) buffer_size)) == NULL) return -1;
       mov       rdi, 1
       mov       rsi, rax
-      ALIGN_STACK_AND_CALL r12, calloc, wrt, ..plt
+      ALIGN_STACK_AND_CALL rbx, calloc, wrt, ..plt
       mov       rdi, QWORD [rbp - 8]
       mov       QWORD [rdi + list.buffer], rax
       test      rax, rax
@@ -441,7 +452,7 @@ list_init:
 ; return 0;
       xor       eax, eax
 .epilogue:
-      pop       r12
+      mov       rbx, QWORD [rbp - 24]
       mov       rsp, rbp
       pop       rbp
       ret
@@ -465,6 +476,7 @@ list_init:
 ;   QWROD [rbp - 16]  = old_buffer_size
 ;   QWORD [rbp - 24]  = new_buffer_size
 ;   QWORD [rbp - 32]  = new_buffer
+;   QWORD [rbp - 40]  = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_new:function hidden
@@ -472,10 +484,9 @@ list_new:
 ; prologue
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 32
-      push      r12
-; QWORD [rbp - 8] = rdi (list)
+      sub       rsp, 40
       mov       QWORD [rbp - 8], rdi
+      mov       QWORD [rbp - 40], rbx
 ; old_buffer_size = (list->bufend - list->buffer);
       mov       rax, QWORD [rdi + list.bufend]
       sub       rax, QWORD [rdi + list.buffer]
@@ -490,7 +501,7 @@ list_new:
 ; if ((new_buffer = calloc(1, new_buffer_size)) == NULL) return NULL;
       mov       rdi, 1
       mov       rsi, rax
-      ALIGN_STACK_AND_CALL r12, calloc, wrt, ..plt
+      ALIGN_STACK_AND_CALL rbx, calloc, wrt, ..plt
       test      rax, rax
       jz        .epilogue
       mov       QWORD [rbp - 32], rax
@@ -507,7 +518,7 @@ list_new:
       mov       QWORD [rdi + list.next], rax
 ; free(list->buffer);
       mov       rdi, QWORD [rdi + list.buffer]
-      ALIGN_STACK_AND_CALL r12, free, wrt, ..plt
+      ALIGN_STACK_AND_CALL rbx, free, wrt, ..plt
 ; list->buffer = new_buffer;
       mov       rdi, QWORD [rbp - 8]
       mov       rax, QWORD [rbp - 32]
@@ -518,7 +529,7 @@ list_new:
 ; return new_buffer;
       mov       rax, QWORD [rbp - 32]
 .epilogue:
-      pop       r12
+      mov       rbx, QWORD [rbp - 40]
       mov       rsp, rbp
       pop       rbp
       ret
@@ -645,7 +656,8 @@ list_prev:
 ;
 ;   QWORD [rbp - 8]   = rdi (list)
 ;   QWORD [rbp - 16]  = rsi (target)
-;   QWORD [rbp - 24 ] = rdx (delete_cb)
+;   QWORD [rbp - 24] = rdx (delete_cb)
+;   QWORD [rbp - 32] = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_remove:function
@@ -653,14 +665,11 @@ list_remove:
 ; prologue:
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 8
-      push      r12
-; QWORD [rbp - 8] = rdi (list)
+      sub       rsp, 40
       mov       QWORD [rbp - 8], rdi
-; QWORD [rbp - 16]  = rsi (target)
       mov       QWORD [rbp - 16], rsi
-; QWORD [rbp - 24]  = rdx (delete_cb)
       mov       QWORD [rbp - 24], rdx
+      mov       QWORD [rbp - 32], rbx
 ; if (target < list->buffer || target > list->blkend) return;
       cmp       rsi, QWORD [rdi + list.buffer]
       jb        .epilogue
@@ -680,7 +689,7 @@ list_remove:
       jz        .no_delete_cb
       mov       rdi, rsi
       mov       rcx, rdx
-      ALIGN_STACK_AND_CALL r12, rcx
+      ALIGN_STACK_AND_CALL rbx, rcx
 .no_delete_cb:
 ; if (target == (list->blkend - list->s_size)) goto .skip_move;
       mov       rdi, QWORD [rbp - 8]
@@ -710,7 +719,7 @@ list_remove:
       sub       rax, QWORD [rdi + list.s_size]
       mov       QWORD [rdi + list.blkend], rax
 .epilogue:
-      pop       r12
+      mov       rbx, QWORD [rbp - 32]
       mov       rsp, rbp
       pop       rbp
       ret
@@ -742,18 +751,27 @@ list_slot_size:
 ;
 ;   rdi = list
 ;   rsi = sort_cb
+;
+; stack:
+;
+;   QWORD [rbp - 8] = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_sort:function
 list_sort:
-      push      r12
+; prologue
+      push      rbp
+      mov       rbp, rsp
+      sub       rsp, 8
+      mov       QWORD [rbp - 8], rbx
       call      list_count
       mov       rcx, rsi
       mov       rdx, QWORD [rdi + list.o_size]
       mov       rsi, rax
       mov       rdi, QWORD [rdi + list.buffer]
-      ALIGN_STACK_AND_CALL r12, qsort, wrt, ..plt
-      pop       r12
+      ALIGN_STACK_AND_CALL rbx, qsort, wrt, ..plt
+; epilogue
+      mov       rbx, QWORD [rbp - 8]
       ret
 ;
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -794,7 +812,8 @@ list_succ:
 ;
 ; stack:
 ;
-;   QWORD [rbp - 8] = rdi (list)
+;   QWORD [rbp - 8]   = rdi (list)
+;   QWORD [rbp - 16]  = rbx (callee saved)
 ;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;
       global list_term:function
@@ -802,19 +821,18 @@ list_term:
 ; prologue
       push      rbp
       mov       rbp, rsp
-      sub       rsp, 8
-      push      r12
-; QWORD [rbp - 8] = rdi (list)
+      sub       rsp, 24
       mov       QWORD [rbp - 8], rdi
+      mov       QWORD [rbp - 16], rbx
 ; free(list->buffer);
       mov       rdi, QWORD [rdi + list.buffer]
-      ALIGN_STACK_AND_CALL r12, free, wrt, ..plt
+      ALIGN_STACK_AND_CALL rbx, free, wrt, ..plt
 ; bzero(list, sizeof(list_t));
       mov       rdi, QWORD [rbp - 8]
       mov       rsi, QWORD list_size
-      ALIGN_STACK_AND_CALL r12, bzero, wrt, ..plt
+      ALIGN_STACK_AND_CALL rbx, bzero, wrt, ..plt
 ; epilogue
-      pop       r12
+      mov       rbx, QWORD [rbp - 16]
       mov       rsp, rbp
       pop       rbp
       ret
