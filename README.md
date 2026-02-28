@@ -93,6 +93,7 @@ int main(void)
         printf("ID: %d  Name: %s\n", p->id, p->name);
     }
 
+    list_term(people);
     list_free(people);
     return 0;
 }
